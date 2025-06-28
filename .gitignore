@@ -42,3 +42,4 @@ testdata/
 # Environment variables
 .env
 .env.*
+.aider*

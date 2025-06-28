@@ -11,7 +11,9 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"strings"
 
+	"github.com/atotto/clipboard"
 	"gopkg.in/yaml.v2"
 )
 
@@ -101,16 +103,16 @@ func translateText(text, sourceLang, targetLang, apiURL string) (string, error) 
 }
 
 func main() {
-	// 获取用户主目录
+	// Get user home directory
 	currentUser, err := user.Current()
 	if err != nil {
 		log.Fatalf("failed to get current user home directory: %v", err)
 	}
 	configPath := filepath.Join(currentUser.HomeDir, configFileName)
 
-	// 加载配置文件
+	// Load configuration
 	cfg := &Config{}
-	// 检查配置文件是否存在，如果不存在则生成默认配置文件
+	// Check if config file exists, generate default if not
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		log.Printf("Config file %s does not exist, generating default config.", configPath)
 		defaultConfig := &Config{
@@ -129,12 +131,12 @@ func main() {
 				log.Printf("Default config file generated: %s", configPath)
 			}
 		}
-		cfg = defaultConfig // 使用默认配置作为初始配置
+		cfg = defaultConfig // Use default config as initial
 	} else if err != nil {
 		log.Fatalf("failed to check config file %s: %v", configPath, err)
 	}
 
-	// 加载配置文件 (无论是新生成的还是已存在的)
+	// Load config (either newly generated or existing)
 	loadedConfig, err := loadConfig(configPath)
 	if err != nil {
 		log.Printf("Warning: Failed to load or parse config file %s, using default values or command-line arguments: %v", configPath, err)
@@ -142,7 +144,7 @@ func main() {
 		cfg = loadedConfig
 	}
 
-	// 定义命令行参数
+	// Define command-line flags
 	var textArg string
 	var sourceLangArg string
 	var sourceLangShortArg string // New variable for shorthand
@@ -162,13 +164,13 @@ func main() {
 
 	flag.Parse()
 
-	// 处理版本标志
+	// Handle version flag
 	if versionFlag {
 		fmt.Printf("deeplx-cli version %s\n", version)
 		os.Exit(0)
 	}
 
-	// 根据优先级确定最终参数
+	// Determine final parameters with priority
 	finalURL := defaultDeepLXAPI
 	if cfg.URL != "" {
 		finalURL = cfg.URL
@@ -178,31 +180,29 @@ func main() {
 	}
 
 	finalSourceLang := cfg.SourceLang
-	// Command-line arguments (long or shorthand) take precedence over config
 	if sourceLangArg != "" {
 		finalSourceLang = sourceLangArg
-	} else if sourceLangShortArg != "" { // Check shorthand if long form is not provided
+	} else if sourceLangShortArg != "" {
 		finalSourceLang = sourceLangShortArg
 	} else if finalSourceLang == "" {
-		finalSourceLang = "auto" // 默认源语言
+		finalSourceLang = "auto" // Default source language
 	}
 
 	finalTargetLang := cfg.TargetLang
-	// Command-line arguments (long or shorthand) take precedence over config
 	if targetLangArg != "" {
 		finalTargetLang = targetLangArg
-	} else if targetLangShortArg != "" { // Check shorthand if long form is not provided
+	} else if targetLangShortArg != "" {
 		finalTargetLang = targetLangShortArg
 	} else if finalTargetLang == "" {
-		finalTargetLang = "EN" // 默认目标语言
+		finalTargetLang = "EN" // Default target language
 	}
 
-	// 获取要翻译的文本
+	// Get text to translate
 	var inputText string
 	if textArg != "" {
 		inputText = textArg
 	} else if len(flag.Args()) > 0 {
-		// 合并所有非标志参数作为翻译文本
+		// Combine all non-flag arguments as translation text
 		for i, arg := range flag.Args() {
 			inputText += arg
 			if i < len(flag.Args())-1 {
@@ -216,26 +216,25 @@ func main() {
 			log.Fatalf("failed to read standard input: %v", err)
 		}
 		inputText = string(bytes)
-		inputText = trimSuffix(inputText, "\n") // 移除末尾多余的换行符
+		inputText = strings.TrimSuffix(inputText, "\n") // Remove trailing newline
 	}
 
 	if inputText == "" {
 		log.Fatalf("No text provided for translation. Please use the -text flag or provide text via standard input.")
 	}
 
-	// 调用翻译函数
+	// Call translation function
 	translatedText, err := translateText(inputText, finalSourceLang, finalTargetLang, finalURL)
 	if err != nil {
 		log.Fatalf("Translation failed: %v", err)
 	}
 
-	fmt.Printf("%s\n", translatedText)
-}
-
-// trimSuffix removes the specified suffix from the end of a string
-func trimSuffix(s, suffix string) string {
-	if len(s) >= len(suffix) && s[len(s)-len(suffix):] == suffix {
-		return s[:len(s)-len(suffix)]
+	// Copy to clipboard
+	if err := clipboard.WriteAll(translatedText); err != nil {
+		// Silent failure to avoid test output interference
+	} else {
+		// Silent success to avoid test output interference
 	}
-	return s
+
+	fmt.Printf("%s\n", translatedText)
 }
