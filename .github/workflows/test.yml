@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main, master, develop ]
 
+# 添加权限设置
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
