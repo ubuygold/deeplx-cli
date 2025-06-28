@@ -1,0 +1,44 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.prof
+deeplx-cli
+
+# Go workspace file
+go.work
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.bak
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+bin/
+pkg/
+build/
+.cache/
+.cache/go-build/
+
+# Dependency directories
+vendor/
+
+# Test results
+testdata/
+
+# Logs and databases
+*.log
+*.db
+
+# Environment variables
+.env
+.env.*
