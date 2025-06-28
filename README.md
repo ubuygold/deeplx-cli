@@ -1,5 +1,7 @@
 # DeepLX CLI
 
+> This project is a CLI wrapper for the [OwO-Network/DeepLX](https://github.com/OwO-Network/DeepLX) project, providing command-line access to the DeepLX translation API.
+
 This is a command-line tool for the DeepLX translation API.
 
 ## ✨ New Features
@@ -66,7 +68,9 @@ You can immediately paste it anywhere after the command completes.
 ## 📋 Configuration File
 DeepLX CLI attempts to read configuration from `~/.deeplx-cli.yml`. 
 If the file does not exist, a default configuration will be automatically generated.
-
+ 
+> **Note**: The underlying API is provided by the [OwO-Network/DeepLX](https://github.com/OwO-Network/DeepLX) project.
+ 
 **Configuration Example (`~/.deeplx-cli.yml`):**
 ```yaml
 # DeepLX CLI Configuration
